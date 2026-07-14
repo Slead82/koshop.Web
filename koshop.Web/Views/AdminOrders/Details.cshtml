@@ -1,0 +1,109 @@
+@model AdminOrderDetailViewModel
+@{
+    var o = Model.Order;
+    ViewData["Title"] = "جزئیات سفارش";
+    Layout = "_AdminLayout";
+    var statusLabel = new Dictionary<string, string> {
+        {"Pending","در انتظار بررسی"}, {"Processing","در حال پردازش"}, {"Purchased","خریداری شده"},
+        {"Shipped","ارسال شده"}, {"Done","تحویل شده"}, {"Cancelled","لغو شده"}
+    };
+    string[] statuses = { "Pending", "Processing", "Purchased", "Shipped", "Done", "Cancelled" };
+}
+
+@if (TempData["Success"] != null)
+{
+  <div class="admin-card" style="background:#dcfce7;border-color:#bbf7d0;margin-bottom:16px"><strong style="color:#15803d">@TempData["Success"]</strong></div>
+}
+
+<div style="margin-bottom:16px">
+  <a href="/AdminOrders" class="btn-admin-outline">بازگشت به لیست سفارشات</a>
+</div>
+
+<div class="admin-grid-2">
+  <div>
+    <div class="admin-card">
+      <div class="admin-card-head">
+        <div><h2>@o.OrderCode</h2><div class="admin-card-sub">ثبت‌شده در @o.CreatedAt.ToString("yyyy/MM/dd") — فروشگاه مبدا: @o.SourceStore</div></div>
+        <span class="badge badge-@o.Status.ToLower()">@statusLabel.GetValueOrDefault(o.Status, o.Status)</span>
+      </div>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead><tr><th>کالا</th><th>تعداد</th><th>قیمت واحد</th><th>جمع</th></tr></thead>
+          <tbody>
+            @foreach (var item in o.Items)
+            {
+              <tr>
+                <td class="cell-main">@item.ProductNameSnapshot</td>
+                <td>@item.Quantity</td>
+                <td>@item.UnitPrice.ToString("N0")</td>
+                <td>@((item.UnitPrice * item.Quantity).ToString("N0"))</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:16px;padding-top:16px;border-top:1px solid var(--gray-line)">
+        <div style="min-width:220px">
+          <div style="display:flex;justify-content:space-between;font-size:13.3px;margin-bottom:8px;color:var(--ink-soft)"><span>هزینه ارسال</span><span>@o.ShippingCost.ToString("N0") تومان</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:15.5px;font-weight:800"><span>مبلغ کل</span><span>@o.TotalAmount.ToString("N0") تومان</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-card">
+      <div class="admin-card-head"><h2>وضعیت سفارش</h2></div>
+      <div class="admin-timeline">
+        @foreach (var h in o.StatusHistory.OrderBy(x => x.ChangedAt))
+        {
+          <div class="admin-timeline-item done">
+            <div class="admin-timeline-dot">@(h.Status == "Cancelled" ? "✕" : "✓")</div>
+            <div class="admin-timeline-content"><strong>@statusLabel.GetValueOrDefault(h.Status, h.Status)</strong><span>@h.ChangedAt.ToString("yyyy/MM/dd HH:mm")</span></div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="admin-card">
+      <div class="admin-card-head"><h2>مشتری</h2></div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+        <div class="admin-mini-avatar" style="background:var(--orange)">@((o.User?.FullName ?? "?").Substring(0,1))</div>
+        <div><strong style="display:block;font-size:14.5px">@(o.User?.FullName ?? "—")</strong><span style="font-size:12.5px;color:var(--ink-soft)">@(o.User?.PhoneNumber ?? "")</span></div>
+      </div>
+      <a href="/AdminUsers" class="btn-admin-outline" style="width:100%;justify-content:center">مشاهده لیست کاربران</a>
+    </div>
+
+    <div class="admin-card">
+      <div class="admin-card-head"><h2>تغییر وضعیت</h2></div>
+      <form asp-action="UpdateStatus" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="OrderId" value="@o.Id" />
+        <div class="admin-form-group">
+          <label>وضعیت فعلی سفارش</label>
+          <select name="Status" class="admin-select">
+            @foreach (var s in statuses)
+            {
+              <option value="@s" selected="@(s == o.Status)">@statusLabel[s]</option>
+            }
+          </select>
+        </div>
+        <div class="admin-form-group">
+          <label>کد رهگیری مرسوله (اختیاری)</label>
+          <input type="text" name="TrackingCode" class="admin-input" value="@o.TrackingCode" placeholder="مثلاً: TP-88293401">
+        </div>
+        <button type="submit" class="btn-cta" style="width:100%;justify-content:center">ذخیره تغییرات</button>
+      </form>
+    </div>
+
+    <div class="admin-card">
+      <div class="admin-card-head"><h2>یادداشت داخلی</h2></div>
+      <form asp-action="UpdateNote" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="OrderId" value="@o.Id" />
+        <textarea name="AdminNote" class="admin-textarea" placeholder="یادداشت‌هایی که فقط تیم پشتیبانی می‌بیند...">@o.AdminNote</textarea>
+        <button type="submit" class="btn-admin-outline" style="width:100%;justify-content:center;margin-top:10px">ذخیره یادداشت</button>
+      </form>
+    </div>
+  </div>
+</div>

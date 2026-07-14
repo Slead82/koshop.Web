@@ -1,0 +1,78 @@
+@model AdminUsersIndexViewModel
+@{
+    ViewData["Title"] = "مدیریت کاربران";
+    Layout = "_AdminLayout";
+    string[] roles = { "Customer", "VipCustomer", "Support", "Admin" };
+    var roleLabel = new Dictionary<string, string> {
+        {"Customer","مشتری"}, {"VipCustomer","مشتری VIP"}, {"Support","پشتیبان"}, {"Admin","ادمین"}
+    };
+}
+
+@if (TempData["Success"] != null)
+{
+  <div class="admin-card" style="background:#dcfce7;border-color:#bbf7d0;margin-bottom:16px"><strong style="color:#15803d">@TempData["Success"]</strong></div>
+}
+@if (TempData["Error"] != null)
+{
+  <div class="admin-card" style="background:#fee2e2;border-color:#fecaca;margin-bottom:16px"><strong style="color:#b91c1c">@TempData["Error"]</strong></div>
+}
+
+<div class="admin-card">
+  <form method="get" class="admin-toolbar">
+    <div class="admin-search-box">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.6"/><path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <input type="text" name="q" value="@Model.SearchTerm" placeholder="جستجو بر اساس نام، ایمیل یا شماره تماس..." onchange="this.form.submit()">
+    </div>
+    <a href="/AdminUsers" class="admin-filter-chip @(string.IsNullOrEmpty(Model.StatusFilter) ? "active" : "")">همه</a>
+    <a href="/AdminUsers?status=Active" class="admin-filter-chip @(Model.StatusFilter == "Active" ? "active" : "")">فعال</a>
+    <a href="/AdminUsers?status=Blocked" class="admin-filter-chip @(Model.StatusFilter == "Blocked" ? "active" : "")">مسدود</a>
+  </form>
+
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead><tr><th>کاربر</th><th>شماره تماس</th><th>نقش</th><th>تاریخ عضویت</th><th>وضعیت</th><th>تغییر نقش</th><th>عملیات</th></tr></thead>
+      <tbody>
+        @if (!Model.Users.Any())
+        {
+          <tr><td colspan="7"><div class="admin-empty"><strong>کاربری یافت نشد</strong></div></td></tr>
+        }
+        @foreach (var u in Model.Users)
+        {
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:10px">
+                <div class="admin-mini-avatar" style="width:32px;height:32px;font-size:12px;background:var(--orange)">@u.FullName.Substring(0,1)</div>
+                <div><div class="cell-main">@u.FullName</div><div class="cell-sub">@u.Email</div></div>
+              </div>
+            </td>
+            <td>@u.PhoneNumber</td>
+            <td>@roleLabel.GetValueOrDefault(u.Role, u.Role)</td>
+            <td>@u.CreatedAt.ToString("yyyy/MM/dd")</td>
+            <td><span class="badge badge-@(u.Status == "Active" ? "active" : "blocked")">@(u.Status == "Active" ? "فعال" : "مسدود")</span></td>
+            <td>
+              <form asp-controller="AdminUsers" asp-action="ChangeRole" method="post" style="margin:0">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="userId" value="@u.Id" />
+                <select name="newRole" class="admin-select" style="padding:6px 10px;font-size:12.5px" onchange="this.form.submit()">
+                  @foreach (var r in roles)
+                  {
+                    <option value="@r" selected="@(r == u.Role)">@roleLabel[r]</option>
+                  }
+                </select>
+              </form>
+            </td>
+            <td>
+              <form asp-controller="AdminUsers" asp-action="ToggleBlock" method="post" style="margin:0;display:inline">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="userId" value="@u.Id" />
+                <button type="submit" class="btn-admin-icon" title="@(u.Status == "Active" ? "مسدود کردن" : "رفع مسدودی")">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="m5.5 5.5 13 13" stroke="currentColor" stroke-width="1.6"/></svg>
+                </button>
+              </form>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

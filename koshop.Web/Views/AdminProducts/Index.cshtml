@@ -1,0 +1,65 @@
+@model AdminProductsIndexViewModel
+@{
+    ViewData["Title"] = "مدیریت محصولات";
+    Layout = "_AdminLayout";
+}
+
+@if (TempData["Success"] != null)
+{
+  <div class="admin-card" style="background:#dcfce7;border-color:#bbf7d0;margin-bottom:16px"><strong style="color:#15803d">@TempData["Success"]</strong></div>
+}
+
+<div class="admin-card">
+  <div class="admin-card-head">
+    <div><h2>لیست محصولات</h2><div class="admin-card-sub">مدیریت کالاهای موجود در فروشگاه</div></div>
+    <a href="/AdminProducts/Create" class="btn-cta"><span class="plus-icon">+</span>افزودن محصول جدید</a>
+  </div>
+
+  <form method="get" class="admin-toolbar">
+    <div class="admin-search-box">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.6"/><path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <input type="text" name="q" value="@Model.SearchTerm" placeholder="جستجو در نام محصول..." onchange="this.form.submit()">
+    </div>
+    <a href="/AdminProducts" class="admin-filter-chip @(string.IsNullOrEmpty(Model.StatusFilter) ? "active" : "")">همه</a>
+    <a href="/AdminProducts?status=Active" class="admin-filter-chip @(Model.StatusFilter == "Active" ? "active" : "")">فعال</a>
+    <a href="/AdminProducts?status=Draft" class="admin-filter-chip @(Model.StatusFilter == "Draft" ? "active" : "")">پیش‌نویس</a>
+  </form>
+
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead><tr><th>نام محصول</th><th>دسته‌بندی</th><th>قیمت (تومان)</th><th>موجودی</th><th>وضعیت</th><th>عملیات</th></tr></thead>
+      <tbody>
+        @if (!Model.Products.Any())
+        {
+          <tr><td colspan="6"><div class="admin-empty"><strong>محصولی یافت نشد</strong></div></td></tr>
+        }
+        @foreach (var p in Model.Products)
+        {
+          <tr>
+            <td class="cell-main">@p.Name</td>
+            <td>@(p.Category?.Name ?? "—")</td>
+            <td>@p.Price.ToString("N0")</td>
+            <td>
+              @if (p.Stock > 0)
+              {
+                @p.Stock.ToString("N0")
+              }
+              else
+              {
+                <span style="color:#b91c1c;font-weight:700">ناموجود</span>
+              }
+            </td>
+            <td><span class="badge badge-@(p.Status == "Active" ? "active" : "draft")">@(p.Status == "Active" ? "فعال" : "پیش‌نویس")</span></td>
+            <td>
+              <a class="btn-admin-icon" href="/AdminProducts/Edit/@p.Id" title="ویرایش"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 20.5 4.9 17 16.6 5.3a2 2 0 0 1 2.8 0l1.3 1.3a2 2 0 0 1 0 2.8L9 21.1l-5 .4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></a>
+              <form asp-action="Delete" asp-route-id="@p.Id" method="post" style="display:inline" onsubmit="return confirm('این محصول برای همیشه حذف می‌شود. مطمئنید؟')">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn-admin-icon" title="حذف"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V7M6 7l1 13a2 2 0 0 0 2 1.8h6a2 2 0 0 0 2-1.8L18 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+              </form>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

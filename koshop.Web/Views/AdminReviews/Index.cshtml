@@ -1,0 +1,87 @@
+@model AdminReviewsIndexViewModel
+@{
+    ViewData["Title"] = "نظرات کاربران";
+    Layout = "_AdminLayout";
+}
+
+@if (TempData["Success"] != null)
+{
+  <div class="admin-card" style="background:#dcfce7;border-color:#bbf7d0;margin-bottom:16px"><strong style="color:#15803d">@TempData["Success"]</strong></div>
+}
+
+<div class="admin-stat-grid">
+  <div class="admin-stat-card"><div class="admin-stat-value">@Model.Reviews.Count(r => r.Status == "Pending")</div><div class="admin-stat-label">در انتظار بررسی</div></div>
+  <div class="admin-stat-card"><div class="admin-stat-value">@Model.Reviews.Count(r => r.Status == "Approved")</div><div class="admin-stat-label">تأیید شده</div></div>
+  <div class="admin-stat-card"><div class="admin-stat-value">@Model.Reviews.Count(r => r.Status == "Rejected")</div><div class="admin-stat-label">رد شده</div></div>
+  <div class="admin-stat-card"><div class="admin-stat-value">@Model.Reviews.Count</div><div class="admin-stat-label">کل نظرات</div></div>
+</div>
+
+<div class="admin-card">
+  <div class="admin-card-head">
+    <div><h2>مدیریت نظرات محصولات</h2><div class="admin-card-sub">بررسی و تأیید نظرات ارسالی کاربران قبل از نمایش عمومی</div></div>
+  </div>
+
+  <form method="get" class="admin-toolbar">
+    <div class="admin-search-box">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.6"/><path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <input type="text" name="q" value="@Model.SearchTerm" placeholder="جستجو در نام محصول یا کاربر..." onchange="this.form.submit()">
+    </div>
+    <a href="/AdminReviews" class="admin-filter-chip @(string.IsNullOrEmpty(Model.StatusFilter) ? "active" : "")">همه</a>
+    <a href="/AdminReviews?status=Pending" class="admin-filter-chip @(Model.StatusFilter == "Pending" ? "active" : "")">در انتظار</a>
+    <a href="/AdminReviews?status=Approved" class="admin-filter-chip @(Model.StatusFilter == "Approved" ? "active" : "")">تأیید شده</a>
+    <a href="/AdminReviews?status=Rejected" class="admin-filter-chip @(Model.StatusFilter == "Rejected" ? "active" : "")">رد شده</a>
+  </form>
+
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead><tr><th>محصول</th><th>کاربر</th><th>امتیاز</th><th>متن نظر</th><th>تاریخ</th><th>وضعیت</th><th>عملیات</th></tr></thead>
+      <tbody>
+        @if (!Model.Reviews.Any())
+        {
+          <tr><td colspan="7"><div class="admin-empty"><strong>نظری یافت نشد</strong></div></td></tr>
+        }
+        @foreach (var r in Model.Reviews)
+        {
+          <tr>
+            <td class="cell-main">@(r.Product?.Name ?? "—")</td>
+            <td>@(r.User?.FullName ?? r.GuestName ?? "ناشناس")</td>
+            <td>
+              <div style="display:flex;gap:2px">
+                @for (int i = 1; i <= 5; i++)
+                {
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="@(i <= r.Rating ? "#f4b400" : "none")" stroke="#f4b400" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                }
+              </div>
+            </td>
+            <td style="max-width:280px"><div class="cell-sub" style="white-space:normal">@r.Comment</div></td>
+            <td>@r.CreatedAt.ToString("yyyy/MM/dd")</td>
+            <td><span class="badge badge-@(r.Status == "Approved" ? "active" : r.Status == "Rejected" ? "blocked" : "pending")">@(r.Status == "Approved" ? "تأیید شده" : r.Status == "Rejected" ? "رد شده" : "در انتظار")</span></td>
+            <td>
+              @if (r.Status != "Approved")
+              {
+                <form asp-action="SetStatus" method="post" style="display:inline">
+                  @Html.AntiForgeryToken()
+                  <input type="hidden" name="reviewId" value="@r.Id" /><input type="hidden" name="status" value="Approved" />
+                  <button type="submit" class="btn-admin-icon" title="تأیید"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m8 12 3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/></svg></button>
+                </form>
+              }
+              @if (r.Status != "Rejected")
+              {
+                <form asp-action="SetStatus" method="post" style="display:inline">
+                  @Html.AntiForgeryToken()
+                  <input type="hidden" name="reviewId" value="@r.Id" /><input type="hidden" name="status" value="Rejected" />
+                  <button type="submit" class="btn-admin-icon" title="رد کردن"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="m5.5 5.5 13 13" stroke="currentColor" stroke-width="1.6"/></svg></button>
+                </form>
+              }
+              <form asp-action="Delete" method="post" style="display:inline" onsubmit="return confirm('این نظر برای همیشه حذف می‌شود. مطمئنید؟')">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="reviewId" value="@r.Id" />
+                <button type="submit" class="btn-admin-icon" title="حذف"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V7M6 7l1 13a2 2 0 0 0 2 1.8h6a2 2 0 0 0 2-1.8L18 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+              </form>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

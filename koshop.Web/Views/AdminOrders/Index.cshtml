@@ -1,0 +1,71 @@
+@model AdminOrdersIndexViewModel
+@{
+    ViewData["Title"] = "مدیریت سفارشات";
+    Layout = "_AdminLayout";
+    var statusLabel = new Dictionary<string, string> {
+        {"Pending","در انتظار بررسی"}, {"Processing","در حال پردازش"}, {"Purchased","خریداری شده"},
+        {"Shipped","ارسال شده"}, {"Done","تحویل شده"}, {"Cancelled","لغو شده"}
+    };
+    string[] statuses = { "Pending", "Processing", "Purchased", "Shipped", "Done", "Cancelled" };
+}
+
+@if (TempData["Success"] != null)
+{
+  <div class="admin-card" style="background:#dcfce7;border-color:#bbf7d0;margin-bottom:16px"><strong style="color:#15803d">@TempData["Success"]</strong></div>
+}
+
+<div class="admin-card">
+  <form method="get" class="admin-toolbar">
+    <div class="admin-search-box">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.6"/><path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <input type="text" name="q" value="@Model.SearchTerm" placeholder="جستجو بر اساس شناسه، نام یا شماره تماس مشتری..." onchange="this.form.submit()">
+    </div>
+    <a href="/AdminOrders" class="admin-filter-chip @(string.IsNullOrEmpty(Model.StatusFilter) ? "active" : "")">همه</a>
+    @foreach (var s in statuses)
+    {
+      <a href="/AdminOrders?status=@s" class="admin-filter-chip @(Model.StatusFilter == s ? "active" : "")">@statusLabel[s]</a>
+    }
+  </form>
+
+  <form asp-action="BulkUpdateStatus" method="post" id="bulk-form">
+    @Html.AntiForgeryToken()
+    <div style="display:flex;align-items:center;gap:12px;background:var(--peach-bg);border:1px solid #f3d9bb;border-radius:12px;padding:11px 16px;margin-bottom:14px">
+      <select name="newStatus" class="admin-select" style="max-width:220px;padding:7px 12px">
+        <option value="">تغییر وضعیت انتخاب‌شده‌ها به...</option>
+        @foreach (var s in statuses)
+        {
+          <option value="@s">@statusLabel[s]</option>
+        }
+      </select>
+      <button type="submit" class="btn-admin-outline">اعمال روی انتخاب‌شده‌ها</button>
+    </div>
+
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead><tr>
+          <th class="admin-row-check"><input type="checkbox" onclick="document.querySelectorAll('.order-check').forEach(c=>c.checked=this.checked)"></th>
+          <th>شناسه سفارش</th><th>مشتری</th><th>تاریخ</th><th>فروشگاه مبدا</th><th>مبلغ (تومان)</th><th>وضعیت</th><th>عملیات</th>
+        </tr></thead>
+        <tbody>
+          @if (!Model.Orders.Any())
+          {
+            <tr><td colspan="8"><div class="admin-empty"><strong>سفارشی یافت نشد</strong></div></td></tr>
+          }
+          @foreach (var o in Model.Orders)
+          {
+            <tr>
+              <td class="admin-row-check"><input type="checkbox" class="order-check" name="orderIds" value="@o.Id"></td>
+              <td class="cell-main">@o.OrderCode</td>
+              <td>@(o.User?.FullName ?? "—")<div class="cell-sub">@(o.User?.PhoneNumber ?? "")</div></td>
+              <td>@o.CreatedAt.ToString("yyyy/MM/dd")</td>
+              <td>@o.SourceStore</td>
+              <td>@o.TotalAmount.ToString("N0")</td>
+              <td><span class="badge badge-@o.Status.ToLower()">@statusLabel.GetValueOrDefault(o.Status, o.Status)</span></td>
+              <td><a class="btn-admin-icon" href="/AdminOrders/Details/@o.Id" title="مشاهده جزئیات"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12Z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/></svg></a></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </form>
+</div>
