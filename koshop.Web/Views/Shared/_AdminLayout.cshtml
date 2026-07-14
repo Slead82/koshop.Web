@@ -1,0 +1,77 @@
+@{
+    string adminName = User.Identity?.Name ?? "مدیر";
+    string currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+
+    bool IsActive(string controllerName) =>
+        string.Equals(currentController, controllerName, StringComparison.OrdinalIgnoreCase);
+
+    var navItems = new (string Controller, string Href, string Label)[]
+    {
+        ("AdminDashboard", "/AdminDashboard", "داشبورد"),
+        ("AdminOrders", "/AdminOrders", "سفارشات"),
+        ("AdminProducts", "/AdminProducts", "محصولات"),
+        ("AdminUsers", "/AdminUsers", "کاربران"),
+        ("AdminBanners", "/AdminBanners", "بنرها"),
+        ("AdminTickets", "/AdminTickets", "تیکت‌های پشتیبانی"),
+        ("AdminReviews", "/AdminReviews", "نظرات کاربران"),
+        ("AdminBlog", "/AdminBlog", "مقالات"),
+        ("AdminReports", "/AdminReports", "گزارشات و آمار"),
+        ("AdminPages", "/AdminPages", "ویرایش صفحات"),
+    };
+}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="~/style.css">
+<link rel="stylesheet" href="~/admin.css">
+<title>@ViewData["Title"] - KO Admin</title>
+</head>
+<body class="admin-body">
+
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <div class="admin-logo-row">
+      <img src="~/assets/ko-logo.png" alt="KO">
+      <div><strong>KO Admin</strong><span>پنل مدیریت فروشگاه</span></div>
+    </div>
+    <div class="admin-nav-label">مدیریت</div>
+    <nav class="admin-nav">
+      @foreach (var item in navItems)
+      {
+        <a href="@item.Href" class="@(IsActive(item.Controller) ? "active" : "")">@item.Label</a>
+      }
+    </nav>
+    <div class="admin-sidebar-footer">
+      <div class="admin-mini-profile">
+        <div class="admin-mini-avatar">@(adminName.Length > 0 ? adminName.Substring(0,1) : "A")</div>
+        <div><strong>@adminName</strong><span>مدیر کل</span></div>
+      </div>
+      <form asp-controller="AdminAccount" asp-action="Logout" method="post" style="margin:0">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="admin-logout-btn" style="border:none;cursor:pointer;font-family:inherit">خروج از حساب</button>
+      </form>
+    </div>
+  </aside>
+
+  <div class="admin-main">
+    <header class="admin-topbar">
+      <div class="admin-topbar-title"><h1>@ViewData["Title"]</h1></div>
+      <div class="admin-topbar-actions">
+        <a href="/" class="admin-icon-btn" title="مشاهده سایت" target="_blank">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M3 12h18M12 3c2.5 2.5 3.5 5.5 3.5 9s-1 6.5-3.5 9c-2.5-2.5-3.5-5.5-3.5-9s1-6.5 3.5-9Z" stroke="currentColor" stroke-width="1.6"/></svg>
+        </a>
+      </div>
+    </header>
+    <main class="admin-content">
+      @RenderBody()
+    </main>
+  </div>
+</div>
+
+@RenderSection("Scripts", required: false)
+</body>
+</html>

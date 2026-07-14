@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="400" height="400">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e9eef1"/>
+      <stop offset="100%" stop-color="#d2dade"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="24" fill="url(#bg)"/>
+  <g><rect x="35" y="55" width="130" height="80" rx="6" fill="#3a4750"/><rect x="45" y="63" width="110" height="60" rx="3" fill="#fff" opacity="0.15"/><path d="M20 140h160l-12 18H32z" fill="#3a4750"/></g>
+  <text x="100" y="186" font-family="Tahoma, Arial, sans-serif" font-size="11" fill="#3a4750" text-anchor="middle" opacity="0.0">لپ‌تاپ ایسوس</text>
+</svg>

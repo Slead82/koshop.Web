@@ -1,0 +1,171 @@
+@model ProductDetailsViewModel
+@{
+    ViewData["Title"] = Model.Product.Name;
+    ViewData["ActiveNav"] = "shop";
+    var p = Model.Product;
+    var mainImg = p.Images.OrderBy(i => i.SortOrder).FirstOrDefault()?.ImageUrl ?? "/assets/ko-logo.png";
+}
+
+<div class="product-page-wrap">
+  <div class="shop-page-header" style="margin:-40px -32px 24px;border-radius:0">
+    <div class="shop-page-header-inner">
+      <div class="breadcrumb">
+        <a href="/">صفحه اصلی</a><span class="crumb-sep">›</span>
+        <a href="/Shop">فروشگاه</a><span class="crumb-sep">›</span>
+        <span style="color:var(--ink-soft)">@p.Category?.Name</span><span class="crumb-sep">›</span>
+        <span style="color:var(--orange)">@p.Name</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-top-grid">
+    <div class="product-gallery">
+      <div class="product-main-img-wrap">
+        <img class="product-main-img" src="@mainImg" alt="@p.Name">
+      </div>
+      @if (p.Images.Count > 1)
+      {
+        <div class="product-thumbnails">
+          @foreach (var img in p.Images.OrderBy(i => i.SortOrder))
+          {
+            <img src="@img.ImageUrl" alt="@p.Name" style="width:60px;height:60px;object-fit:contain;border:1px solid var(--gray-line);border-radius:8px;cursor:pointer" onclick="document.querySelector('.product-main-img').src=this.src">
+          }
+        </div>
+      }
+    </div>
+
+    <div class="product-info">
+      <h1 class="product-info-title">@p.Name</h1>
+      <div class="product-rating-row">
+        <div class="stars">
+          @for (int i = 1; i <= 5; i++)
+          {
+            <svg viewBox="0 0 24 24" fill="@(i <= Math.Round(p.Rating) ? "#f4b400" : "none")" stroke="#f4b400" width="14" height="14"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          }
+        </div>
+        <span>@p.Rating.ToString("0.0") (@p.ReviewCount نظر)</span>
+        <span style="color:var(--gray-line)">|</span>
+        <span>@p.Brand</span>
+      </div>
+      <p style="font-size:13.5px;color:var(--ink-soft);line-height:1.9;margin-bottom:16px">@p.Description</p>
+      <div class="product-price-box">
+        <span class="ppb-new">@p.Price.ToString("N0") تومان</span>
+        @if (p.OldPrice.HasValue)
+        {
+          <span class="ppb-old">@p.OldPrice.Value.ToString("N0")</span>
+          var discount = (int)Math.Round((1 - (p.Price / p.OldPrice.Value)) * 100);
+          <span class="ppb-discount">@(discount)٪ تخفیف</span>
+        }
+      </div>
+
+      @if (p.Stock <= 0)
+      {
+        <p style="color:#e1452f;font-weight:700;margin-bottom:12px">این محصول در حال حاضر ناموجود است</p>
+      }
+
+      <div class="product-actions">
+        <button class="btn-add-to-cart" disabled="@(p.Stock <= 0)">
+          <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M2 3h2l2.4 12.2a2 2 0 0 0 2 1.6h8.2a2 2 0 0 0 2-1.6L21 7H6" stroke="currentColor" stroke-width="1.6"/><circle cx="9" cy="20" r="1.3" fill="currentColor"/><circle cx="17" cy="20" r="1.3" fill="currentColor"/></svg>
+          افزودن به سبد خرید
+        </button>
+        <a href="/Orders/Submit" class="btn-taobao-order">
+          <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M12 3 4 7v10l8 4 8-4V7l-8-4Z" stroke="currentColor" stroke-width="1.5"/></svg>
+          سفارش کالا از فروشگاه‌های مرجع
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reviews -->
+  <div class="product-tabs-section">
+    <div class="product-tabs-nav">
+      <span style="font-weight:700;padding:12px 4px;border-bottom:2px solid var(--orange)">نظرات کاربران (@Model.ApprovedReviews.Count)</span>
+    </div>
+    <div class="product-tab-content" style="display:block">
+
+      @if (User.Identity?.IsAuthenticated == true)
+      {
+        <div style="background:var(--gray-bg);border-radius:14px;padding:18px 20px;margin-bottom:22px">
+          @if (TempData["ReviewSuccess"] != null)
+          {
+            <p style="color:#15803d;font-weight:700;margin-bottom:10px">@TempData["ReviewSuccess"]</p>
+          }
+          @if (TempData["ReviewError"] != null)
+          {
+            <p style="color:#e1452f;font-weight:700;margin-bottom:10px">@TempData["ReviewError"]</p>
+          }
+          <strong style="font-size:14px;display:block;margin-bottom:12px">ثبت نظر شما درباره این محصول</strong>
+          <form asp-controller="Shop" asp-action="SubmitReview" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="ProductId" value="@p.Id" />
+            <div style="display:flex;gap:6px;margin-bottom:12px" id="review-star-picker">
+              @for (int i = 1; i <= 5; i++)
+              {
+                <label style="cursor:pointer">
+                  <input type="radio" name="Rating" value="@i" style="display:none" checked="@(i == 5)" />
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#f4b400" width="20" height="20"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </label>
+              }
+            </div>
+            <textarea name="Comment" placeholder="نظر خود را بنویسید..." style="width:100%;min-height:80px;border:1.5px solid var(--gray-line);border-radius:10px;padding:11px 14px;font-family:inherit;font-size:13.3px"></textarea>
+            <div style="display:flex;justify-content:flex-end;margin-top:10px">
+              <button type="submit" class="btn-cta">ارسال نظر</button>
+            </div>
+          </form>
+        </div>
+      }
+      else
+      {
+        <p style="font-size:13px;color:var(--ink-soft);margin-bottom:20px">برای ثبت نظر، ابتدا <a href="/Account/Login" style="color:var(--orange);font-weight:700">وارد حساب کاربری</a> خود شوید.</p>
+      }
+
+      @if (!Model.ApprovedReviews.Any())
+      {
+        <p style="font-size:13px;color:var(--ink-soft)">هنوز نظری برای این محصول ثبت نشده است. اولین نفری باشید که نظر می‌دهد!</p>
+      }
+      else
+      {
+        <div style="display:flex;flex-direction:column;gap:18px">
+          @foreach (var r in Model.ApprovedReviews)
+          {
+            <div style="border-bottom:1px solid var(--gray-line);padding-bottom:16px">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+                <div style="width:36px;height:36px;border-radius:50%;background:var(--peach-bg);color:var(--orange);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px">@((r.User?.FullName ?? "کاربر").Substring(0,1))</div>
+                <div>
+                  <strong style="font-size:13.5px">@(r.User?.FullName ?? "کاربر")</strong>
+                  <div style="display:flex;gap:2px">
+                    @for (int j = 1; j <= 5; j++)
+                    {
+                      <svg viewBox="0 0 24 24" fill="@(j <= r.Rating ? "#f4b400" : "none")" stroke="#f4b400" width="11" height="11"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    }
+                  </div>
+                </div>
+              </div>
+              <p style="font-size:13px;color:var(--ink-soft);line-height:1.8">@r.Comment</p>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  @if (Model.RelatedProducts.Any())
+  {
+    <div style="margin-top:40px">
+      <h2 style="font-size:17px;font-weight:800;margin-bottom:18px">محصولات مشابه</h2>
+      <div class="shop-products-grid">
+        @foreach (var rp in Model.RelatedProducts)
+        {
+          var rimg = rp.Images.OrderBy(i => i.SortOrder).FirstOrDefault()?.ImageUrl ?? "/assets/ko-logo.png";
+          <a asp-action="Details" asp-route-id="@rp.Id" class="sp-card" style="text-decoration:none;color:inherit">
+            <div class="sp-thumb"><img src="@rimg" alt="@rp.Name" style="width:80%;padding:12px;object-fit:contain"></div>
+            <div class="sp-body">
+              <div class="sp-name">@rp.Name</div>
+              <div class="sp-price">@rp.Price.ToString("N0") تومان</div>
+            </div>
+          </a>
+        }
+      </div>
+    </div>
+  }
+</div>

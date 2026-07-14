@@ -1,0 +1,53 @@
+@model AdminLoginViewModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#131417">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="~/style.css">
+<link rel="stylesheet" href="~/admin.css">
+<title>ورود مدیران - KO Admin</title>
+</head>
+<body>
+<div class="admin-login-wrap">
+  <div class="admin-login-card">
+    <div class="admin-login-logo">
+      <img src="~/assets/ko-logo.png" alt="KO">
+      <strong>KO Admin</strong>
+      <span>ورود به پنل مدیریت فروشگاه</span>
+    </div>
+
+    <div class="admin-login-error @(ViewData.ModelState.IsValid ? "" : "show")">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M12 8v5M12 16h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span asp-validation-summary="All"></span>
+    </div>
+
+    <form asp-controller="AdminAccount" asp-action="Login" method="post">
+      @Html.AntiForgeryToken()
+      <div class="admin-form-group">
+        <label asp-for="Username"></label>
+        <input asp-for="Username" class="admin-input" placeholder="نام کاربری خود را وارد کنید" autocomplete="username">
+      </div>
+      <div class="admin-form-group">
+        <label asp-for="Password"></label>
+        <input asp-for="Password" class="admin-input" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn-cta" style="width:100%;justify-content:center">ورود به پنل</button>
+    </form>
+
+    <div style="text-align:center;margin-top:14px">
+      <a href="/Account/Login" style="font-size:12px;color:var(--ink-soft);display:inline-flex;align-items:center;gap:6px">
+        <svg viewBox="0 0 24 24" fill="none" width="13" height="13"><path d="M19 12H5M11 18l-6-6 6-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        بازگشت به ورود کاربران
+      </a>
+    </div>
+  </div>
+</div>
+</body>
+</html>

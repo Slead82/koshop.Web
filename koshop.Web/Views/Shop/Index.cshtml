@@ -1,0 +1,88 @@
+@model ShopIndexViewModel
+@{
+    ViewData["Title"] = "فروشگاه";
+    ViewData["ActiveNav"] = "shop";
+}
+
+<div class="shop-page-header">
+  <div class="shop-page-header-inner">
+    <div class="breadcrumb"><a href="/">صفحه اصلی</a><span class="crumb-sep">›</span><span style="color:var(--orange)">فروشگاه</span></div>
+    <h1>فروشگاه</h1>
+  </div>
+</div>
+
+<div class="shop-layout-wrap">
+  <aside class="shop-filter-aside">
+    <div style="background:#fff;border:1px solid var(--gray-line);border-radius:var(--radius-md);padding:20px;display:flex;flex-direction:column;gap:20px">
+
+      <form method="get" asp-action="Index">
+        <div style="margin-bottom:16px">
+          <label style="font-size:13px;font-weight:700;display:block;margin-bottom:8px">جستجو</label>
+          <input type="text" name="q" value="@Model.SearchTerm" placeholder="نام محصول..." class="form-input" />
+        </div>
+
+        <div>
+          <label style="font-size:13px;font-weight:700;display:block;margin-bottom:8px">دسته‌بندی</label>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <label style="display:flex;align-items:center;gap:8px;font-size:13.5px;cursor:pointer">
+              <input type="radio" name="categoryId" value="" onchange="this.form.submit()" checked="@(Model.SelectedCategoryId == null)" /> همه دسته‌ها
+            </label>
+            @foreach (var cat in Model.Categories)
+            {
+              <label style="display:flex;align-items:center;gap:8px;font-size:13.5px;cursor:pointer">
+                <input type="radio" name="categoryId" value="@cat.Id" onchange="this.form.submit()" checked="@(Model.SelectedCategoryId == cat.Id)" /> @cat.Name
+              </label>
+            }
+          </div>
+        </div>
+      </form>
+    </div>
+  </aside>
+
+  <div>
+    @if (!Model.Products.Any())
+    {
+      <div class="admin-empty" style="background:#fff;border:1px solid var(--gray-line);border-radius:var(--radius-md);padding:60px 20px;text-align:center">
+        <strong style="display:block;font-size:15px;margin-bottom:6px">محصولی یافت نشد</strong>
+        <span style="color:var(--ink-soft);font-size:13px">فیلتر یا عبارت جستجو را تغییر دهید.</span>
+      </div>
+    }
+    else
+    {
+      <div class="shop-products-grid">
+        @foreach (var p in Model.Products)
+        {
+          var img = p.Images.OrderBy(i => i.SortOrder).FirstOrDefault()?.ImageUrl ?? "/assets/ko-logo.png";
+          <a asp-action="Details" asp-route-id="@p.Id" class="sp-card" style="cursor:pointer;text-decoration:none;color:inherit">
+            <div class="sp-thumb" style="position:relative">
+              <img src="@img" alt="@p.Name" style="width:80%;padding:12px;object-fit:contain" loading="lazy" onerror="this.onerror=null;this.src='/assets/ko-logo.png';this.style.opacity='.2'">
+              @if (p.OldPrice.HasValue && p.OldPrice > p.Price)
+              {
+                var discount = (int)Math.Round((1 - (p.Price / p.OldPrice.Value)) * 100);
+                <span style="position:absolute;top:10px;left:10px;background:#e53935;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px">@(discount)٪</span>
+              }
+            </div>
+            <div class="sp-body">
+              <div class="sp-name">@p.Name</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+                <div class="sp-price">@p.Price.ToString("N0") تومان</div>
+                @if (p.OldPrice.HasValue)
+                {
+                  <div style="font-size:11px;color:#b3b4ba;text-decoration:line-through">@p.OldPrice.Value.ToString("N0")</div>
+                }
+              </div>
+              <div class="sp-rating">
+                <svg viewBox="0 0 24 24" fill="#f4b400" width="12" height="12"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                @p.Rating.ToString("0.0") <span style="color:#b3b4ba">(@p.ReviewCount)</span>
+              </div>
+              @if (p.Stock <= 0)
+              {
+                <div style="font-size:11.5px;color:#e1452f;font-weight:700;margin-top:4px">ناموجود</div>
+              }
+            </div>
+          </a>
+        }
+      </div>
+    }
+  </div>
+</div>

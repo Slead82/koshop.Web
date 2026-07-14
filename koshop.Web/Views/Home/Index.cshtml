@@ -1,0 +1,33 @@
+@{
+    ViewData["Title"] = "صفحه اصلی";
+    ViewData["ActiveNav"] = "home";
+}
+
+<!--
+  این یک صفحه اصلی موقتی است. نسخه کامل (هدر بزرگ، دسته‌بندی‌ها،
+  محصولات منتخب از دیتابیس) در قدم بعدی (ShopController) اضافه می‌شود.
+  فعلاً هدف این صفحه فقط تأیید این است که Layout، هدر، فوتر و
+  سیستم ورود/خروج به‌درستی کار می‌کنند.
+-->
+<section class="hero-section">
+  <div class="hero-inner">
+    <div class="hero-text reveal-from-right">
+      <span class="hero-eyebrow">به زودی...</span>
+      <h1 class="hero-title">تجربه‌ای جدید<br><span style="color:var(--orange)">در راه است !</span></h1>
+      <p class="hero-desc">ما در حال آماده‌سازی بستری متفاوت و حرفه‌ای برای خرید و ثبت سفارش محصولات مورد نیاز شما هستیم.</p>
+      <div class="hero-cta-row">
+        <a href="/Orders/Submit" class="btn-cta">ثبت سفارش کالا</a>
+        <a href="/Home/About" class="btn-cta-outline">درباره ما</a>
+      </div>
+    </div>
+    <div class="hero-media reveal-from-left">
+      <div class="hero-glow"></div>
+      <div class="hero-platform"></div>
+      <img src="~/assets/cart-hero.png" alt="KO" class="hero-cart-img">
+    </div>
+  </div>
+</section>
+
+<div style="max-width:var(--maxw);margin:60px auto;padding:0 32px;text-align:center;color:var(--ink-soft)">
+  <p>@(User.Identity?.IsAuthenticated == true ? $"سلام {User.Identity!.Name}! ورود شما با موفقیت انجام شد." : "برای مشاهده محصولات، وارد حساب کاربری خود شوید یا در سایت ثبت‌نام کنید.")</p>
+</div>
