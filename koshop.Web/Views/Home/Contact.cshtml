@@ -1,0 +1,129 @@
+@model ContactViewModel
+@{
+    var content = Model.Content;
+    ViewData["Title"] = !string.IsNullOrWhiteSpace(content?.SeoTitle) ? content!.SeoTitle : "تماس با ما";
+    ViewData["ActiveNav"] = "contact";
+    var heroImg = !string.IsNullOrWhiteSpace(content?.ImgSlide1) ? content!.ImgSlide1 : "/assets/contact-hero.png";
+    var phone = !string.IsNullOrWhiteSpace(Model.Setting?.HeaderPhone) ? Model.Setting!.HeaderPhone : "021-12345678";
+}
+
+<div class="shop-page-header">
+  <div class="shop-page-header-inner">
+    <div class="breadcrumb reveal-from-right"><a href="/">صفحه اصلی</a><span class="crumb-sep">›</span><span style="color:var(--orange)">تماس با ما</span></div>
+  </div>
+</div>
+
+<!-- ===================== CONTACT HERO ===================== -->
+<section class="contact-hero">
+  <div class="contact-hero-inner">
+    <div class="contact-hero-media">
+      <div class="hero-glow"></div>
+      <img src="@heroImg" alt="تماس با ما" class="contact-hero-img" onerror="this.onerror=null;this.src='/assets/contact-hero.png'">
+    </div>
+    <div class="contact-hero-text">
+      <h1>@(content?.HeaderTitle ?? "تمـاس با ما")</h1>
+      <p>ما همیشه آماده پاسخ‌گویی به سوالات و همراهی شما هستیم.<br>از طریق راه‌های زیر با ما در ارتباط باشید.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CONTACT METHODS ===================== -->
+<section class="section contact-methods-section">
+  <h2 class="centered-title">@(content?.Box1_Title ?? "راه‌های ارتباطی")</h2>
+  <div class="contact-methods-grid">
+    <div class="contact-method-card">
+      <span class="contact-method-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21.5s7-6.6 7-12A7 7 0 0 0 5 9.5c0 5.4 7 12 7 12Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.6" stroke="currentColor" stroke-width="1.6"/></svg></span>
+      <strong class="contact-method-title">آدرس</strong>
+      <p class="contact-method-lines"><span class="nowrap-line">تهران، خیابان ولیعصر،</span><br><span class="nowrap-line">پلاک ۱۲۳، واحد ۴</span></p>
+    </div>
+    <div class="contact-method-card">
+      <span class="contact-method-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5.5" width="18" height="13" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="m4 7 8 6 8-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <strong class="contact-method-title">ایمیل</strong>
+      <p class="contact-method-lines"><span class="nowrap-line">@("info@koshop.com")</span></p>
+    </div>
+    <div class="contact-method-card">
+      <span class="contact-method-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 13v-1a8 8 0 0 1 16 0v1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><rect x="3" y="13" width="4" height="6" rx="1.6" stroke="currentColor" stroke-width="1.6"/><rect x="17" y="13" width="4" height="6" rx="1.6" stroke="currentColor" stroke-width="1.6"/><path d="M19 19v.5a3 3 0 0 1-3 3h-2.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+      <strong class="contact-method-title">پشتیبانی</strong>
+      <p class="contact-method-lines"><span class="nowrap-line">@phone</span><br><span class="nowrap-line">همه روزه ۹ تا ۱۸</span></p>
+    </div>
+    <div class="contact-method-card">
+      <span class="contact-method-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M21 3 11 13M21 3l-6.5 18-3.5-8-8-3.5L21 3Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <strong class="contact-method-title">تلگرام</strong>
+      <p class="contact-method-lines"><span class="nowrap-line">@("@koshop_support")</span><br><span class="nowrap-line">(پاسخ سریع)</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FORM + MAP ===================== -->
+<section class="section contact-form-section">
+  <div class="contact-form-grid">
+
+    <div class="contact-card form-card">
+      <h3>@(content?.Box2_Title ?? "فرم تماس")</h3>
+      @if (TempData["Success"] != null)
+      {
+        <div style="background:#dcfce7;border:1px solid #bbf7d0;border-radius:10px;padding:12px 16px;margin-bottom:14px"><strong style="color:#15803d;font-size:13.5px">@TempData["Success"]</strong></div>
+      }
+      @if (TempData["Error"] != null)
+      {
+        <div style="background:#fee2e2;border:1px solid #fecaca;border-radius:10px;padding:12px 16px;margin-bottom:14px"><strong style="color:#b91c1c;font-size:13.5px">@TempData["Error"]</strong></div>
+      }
+      <form class="contact-form" method="post" asp-controller="Home" asp-action="ContactSubmit">
+        @Html.AntiForgeryToken()
+        <input type="text" name="fullName" placeholder="نام و نام خانوادگی" required>
+        <input type="email" name="email" placeholder="ایمیل" required>
+        <input type="tel" name="phone" placeholder="شماره تماس">
+        <textarea name="message" placeholder="پیام شما" rows="5" required></textarea>
+        <button type="submit" class="btn-cta form-submit">
+          ارسال پیام
+          <svg class="send-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21 3 11 13M21 3l-6.5 18-3.5-8-8-3.5L21 3Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </form>
+    </div>
+
+    <div class="contact-card map-card">
+      <h3>@(content?.Box3_Title ?? "ما را پیدا کنید")</h3>
+      <p>شما می‌توانید از طریق نقشه زیر مسیر خود را به دفتر ما پیدا کنید.</p>
+      <div class="map-frame">
+        <svg class="map-svg" viewBox="0 0 600 480" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+          <rect width="600" height="480" fill="#eef0ed"/>
+          <rect x="0" y="60" width="600" height="34" fill="#f6da9a"/>
+          <rect x="0" y="260" width="600" height="22" fill="#f6da9a"/>
+          <rect x="120" y="0" width="26" height="480" fill="#fff"/>
+          <rect x="320" y="0" width="20" height="480" fill="#fff"/>
+          <rect x="0" y="160" width="600" height="18" fill="#fff"/>
+          <rect x="0" y="360" width="600" height="16" fill="#fff"/>
+          <path d="M0 120 C150 140, 250 80, 600 130" stroke="#bcd8ee" stroke-width="14" fill="none"/>
+          <circle cx="90" cy="80" r="46" fill="#cfe3bd"/>
+          <circle cx="470" cy="370" r="60" fill="#cfe3bd"/>
+          <circle cx="200" cy="330" r="34" fill="#cfe3bd"/>
+          <circle cx="500" cy="120" r="28" fill="#cfe3bd"/>
+          <g transform="translate(300,250)">
+            <path d="M0 -34c14 0 24 10 24 24 0 17-24 40-24 40s-24-23-24-40c0-14 10-24 24-24Z" fill="#f4790a" stroke="#fff" stroke-width="3"/>
+            <circle cx="0" cy="-12" r="8" fill="#fff"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===================== FAQ CTA ===================== -->
+<section class="section faq-cta-section">
+  <div class="faq-cta-card">
+    <h3>@(content?.FooterTitle ?? "سوال دارید؟")</h3>
+    <p>قبل از تماس، ممکن است پاسخ سوال خود را در بخش سوالات متداول پیدا کنید.</p>
+    <a href="/Home/Faq" class="btn-ghost">
+      مشاهده سوالات متداول
+      <span class="info-icon">?</span>
+    </a>
+  </div>
+</section>
+
+<!-- ===================== FEATURE STRIP ===================== -->
+<section class="feature-strip reveal-from-bottom">
+  <div class="feature-strip-inner" id="features-top"></div>
+</section>

@@ -1,0 +1,48 @@
+@model List<Banner>
+@{
+    ViewData["Title"] = "مدیریت بنرها";
+    Layout = "_AdminLayout";
+}
+
+@if (TempData["Success"] != null)
+{
+  <div class="admin-card" style="background:#dcfce7;border-color:#bbf7d0;margin-bottom:16px"><strong style="color:#15803d">@TempData["Success"]</strong></div>
+}
+
+<div class="admin-card">
+  <div class="admin-card-head">
+    <div><h2>بنرهای تبلیغاتی</h2><div class="admin-card-sub">مدیریت بنرهای صفحه اصلی و فروشگاه</div></div>
+    <a href="/AdminBanners/Create" class="btn-cta"><span class="plus-icon">+</span>افزودن بنر جدید</a>
+  </div>
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead><tr><th>عنوان بنر</th><th>محل نمایش</th><th>تعداد کلیک</th><th>وضعیت</th><th>عملیات</th></tr></thead>
+      <tbody>
+        @if (!Model.Any())
+        {
+          <tr><td colspan="5"><div class="admin-empty"><strong>هنوز بنری اضافه نشده</strong></div></td></tr>
+        }
+        @foreach (var b in Model)
+        {
+          <tr>
+            <td class="cell-main">@b.Title</td>
+            <td>@b.Placement</td>
+            <td>@b.Clicks.ToString("N0")</td>
+            <td><span class="badge badge-@(b.IsActive ? "active" : "draft")">@(b.IsActive ? "فعال" : "غیرفعال")</span></td>
+            <td>
+              <a class="btn-admin-icon" href="/AdminBanners/Edit/@b.Id" title="ویرایش"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 20.5 4.9 17 16.6 5.3a2 2 0 0 1 2.8 0l1.3 1.3a2 2 0 0 1 0 2.8L9 21.1l-5 .4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></a>
+              <form asp-action="ToggleActive" asp-route-id="@b.Id" method="post" style="display:inline">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn-admin-icon" title="@(b.IsActive ? "غیرفعال کردن" : "فعال کردن")"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M12 7v5l3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+              </form>
+              <form asp-action="Delete" asp-route-id="@b.Id" method="post" style="display:inline" onsubmit="return confirm('این بنر حذف شود؟')">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn-admin-icon" title="حذف"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V7M6 7l1 13a2 2 0 0 0 2 1.8h6a2 2 0 0 0 2-1.8L18 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+              </form>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

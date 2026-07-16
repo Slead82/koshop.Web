@@ -1,0 +1,50 @@
+@model AdminTicketDetailViewModel
+@{
+    var t = Model.Ticket;
+    ViewData["Title"] = "جزئیات تیکت";
+    Layout = "_AdminLayout";
+    var statusLabel = new Dictionary<string, string> { {"Open","باز"}, {"Answered","پاسخ داده شده"}, {"Closed","بسته شده"} };
+}
+
+@if (TempData["Success"] != null)
+{
+  <div class="admin-card" style="background:#dcfce7;border-color:#bbf7d0;margin-bottom:16px"><strong style="color:#15803d">@TempData["Success"]</strong></div>
+}
+
+<div style="margin-bottom:16px"><a href="/AdminTickets" class="btn-admin-outline">بازگشت به لیست تیکت‌ها</a></div>
+
+<div class="admin-card">
+  <div class="admin-card-head">
+    <div><h2>@t.Subject</h2><div class="admin-card-sub">از طرف @(t.User?.FullName ?? "—") · @t.CreatedAt.ToString("yyyy/MM/dd") · اولویت: @t.Priority</div></div>
+    <span class="badge badge-@t.Status.ToLower()">@statusLabel.GetValueOrDefault(t.Status, t.Status)</span>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">
+    @foreach (var m in t.Messages.OrderBy(x => x.CreatedAt))
+    {
+      var isAdmin = m.SenderType == "Admin";
+      <div style="background:@(isAdmin ? "var(--peach-bg)" : "var(--gray-bg)");border-radius:12px;padding:14px;max-width:80%;@(isAdmin ? "margin-right:auto" : "")">
+        <strong style="font-size:12.5px;display:block;margin-bottom:4px">@(isAdmin ? "پشتیبانی" : (m.Sender?.FullName ?? "کاربر"))</strong>
+        <p style="font-size:13.3px;line-height:1.8">@m.Message</p>
+        <span style="font-size:11px;color:var(--ink-soft)">@m.CreatedAt.ToString("yyyy/MM/dd HH:mm")</span>
+      </div>
+    }
+  </div>
+
+  @if (t.Status != "Closed")
+  {
+    <form asp-action="Reply" method="post">
+      @Html.AntiForgeryToken()
+      <input type="hidden" name="ticketId" value="@t.Id" />
+      <div class="admin-form-group"><label>پاسخ به مشتری</label><textarea name="message" class="admin-textarea" placeholder="پاسخ خود را بنویسید..."></textarea></div>
+      <div style="display:flex;gap:10px">
+        <button type="submit" class="btn-cta">ارسال پاسخ</button>
+        <button type="submit" formaction="/AdminTickets/Close" class="btn-admin-outline">بستن تیکت</button>
+      </div>
+    </form>
+  }
+  else
+  {
+    <p style="color:var(--ink-soft);font-size:13px">این تیکت بسته شده است.</p>
+  }
+</div>

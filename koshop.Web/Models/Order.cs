@@ -44,6 +44,16 @@ public class Order
 
     public List<OrderItem> Items { get; set; } = new();
     public List<OrderStatusHistory> StatusHistory { get; set; } = new();
+
+    // Shipping snapshot filled at checkout (nullable: external-store orders may not have it yet).
+    // DB: ALTER TABLE Orders ADD ReceiverName nvarchar(150) NULL, ReceiverPhone nvarchar(20) NULL, ShippingAddress nvarchar(max) NULL;
+    [StringLength(150)]
+    public string? ReceiverName { get; set; }
+
+    [StringLength(20)]
+    public string? ReceiverPhone { get; set; }
+
+    public string? ShippingAddress { get; set; }
 }
 
 public class OrderItem

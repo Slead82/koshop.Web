@@ -44,6 +44,15 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
+// Session (used for the shopping cart before checkout — no DB table needed for cart items)
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromDays(7);
+    options.Cookie.Name = "KoShop.Session";
+    options.Cookie.IsEssential = true;
+});
+
 var app = builder.Build();
 
 // ---------- Middleware pipeline ----------
@@ -58,6 +67,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles(); // serves everything under /wwwroot (css, js, images — the existing KO Shop front-end assets)
 
 app.UseRouting();
+
+app.UseSession();
 
 app.UseAuthentication();
 app.UseAuthorization();

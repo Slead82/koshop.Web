@@ -1,0 +1,54 @@
+@model AdminBannerFormViewModel
+@{
+    ViewData["Title"] = Model.Id.HasValue ? "ویرایش بنر" : "افزودن بنر جدید";
+    Layout = "_AdminLayout";
+}
+
+<div style="margin-bottom:16px"><a href="/AdminBanners" class="btn-admin-outline">بازگشت به لیست بنرها</a></div>
+
+<div class="admin-card" style="max-width:560px">
+  <div class="admin-card-head"><h2>@ViewData["Title"]</h2></div>
+  <form asp-controller="AdminBanners" asp-action="Save" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <div asp-validation-summary="ModelOnly" style="color:#e1452f;font-size:13px;margin-bottom:12px"></div>
+
+    <div class="admin-form-group">
+      <label asp-for="Title">عنوان بنر</label>
+      <input asp-for="Title" class="admin-input" placeholder="مثلاً: حراج تابستانه">
+      <span asp-validation-for="Title" style="color:#e1452f;font-size:12px"></span>
+    </div>
+
+    <div class="admin-form-group">
+      <label asp-for="Placement">محل نمایش</label>
+      <select asp-for="Placement" class="admin-select">
+        <option>صفحه اصلی - اسلایدر</option>
+        <option>صفحه اصلی - نوار بالا</option>
+        <option>صفحه فروشگاه</option>
+        <option>صفحه دسته‌بندی</option>
+      </select>
+    </div>
+
+    <div class="admin-form-group">
+      <label asp-for="LinkUrl">لینک مقصد (اختیاری)</label>
+      <input asp-for="LinkUrl" class="admin-input" placeholder="مثلاً: /Shop?categoryId=2">
+    </div>
+
+    <div class="admin-form-group">
+      <label asp-for="ImageUrl">آدرس تصویر بنر</label>
+      <input asp-for="ImageUrl" class="admin-input" placeholder="/assets/ko-logo.png">
+      <div class="hint">پیشنهاد اندازه تصویر: ۱۲۰۰×۴۰۰</div>
+    </div>
+
+    <div class="admin-checkbox-row" style="margin-bottom:16px">
+      <input asp-for="IsActive" />
+      <label asp-for="IsActive" style="font-weight:500;cursor:pointer">فعال و قابل نمایش</label>
+    </div>
+
+    <button type="submit" class="btn-cta" style="width:100%;justify-content:center">ذخیره بنر</button>
+  </form>
+</div>
+
+@section Scripts {
+  <partial name="_ValidationScriptsPartial" />
+}

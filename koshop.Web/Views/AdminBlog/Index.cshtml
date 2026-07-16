@@ -1,0 +1,44 @@
+@model AdminBlogIndexViewModel
+@{
+    ViewData["Title"] = "مدیریت مقالات";
+    Layout = "_AdminLayout";
+}
+
+@if (TempData["Success"] != null)
+{
+  <div class="admin-card" style="background:#dcfce7;border-color:#bbf7d0;margin-bottom:16px"><strong style="color:#15803d">@TempData["Success"]</strong></div>
+}
+
+<div class="admin-card">
+  <div class="admin-card-head">
+    <div><h2>مقالات وبلاگ</h2><div class="admin-card-sub">مدیریت محتوای وبلاگ فروشگاه</div></div>
+    <a href="/AdminBlog/Create" class="btn-cta"><span class="plus-icon">+</span>نوشتن مقاله جدید</a>
+  </div>
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead><tr><th>عنوان مقاله</th><th>تاریخ انتشار</th><th>بازدید</th><th>وضعیت</th><th>عملیات</th></tr></thead>
+      <tbody>
+        @if (!Model.Posts.Any())
+        {
+          <tr><td colspan="5"><div class="admin-empty"><strong>هنوز مقاله‌ای منتشر نشده</strong></div></td></tr>
+        }
+        @foreach (var p in Model.Posts)
+        {
+          <tr>
+            <td class="cell-main">@p.Title</td>
+            <td>@(p.PublishedAt?.ToString("yyyy/MM/dd") ?? "—")</td>
+            <td>@p.Views.ToString("N0")</td>
+            <td><span class="badge badge-@(p.Status == "Published" ? "published" : "draft")">@(p.Status == "Published" ? "منتشر شده" : "پیش‌نویس")</span></td>
+            <td>
+              <a class="btn-admin-icon" href="/AdminBlog/Edit/@p.Id" title="ویرایش"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 20.5 4.9 17 16.6 5.3a2 2 0 0 1 2.8 0l1.3 1.3a2 2 0 0 1 0 2.8L9 21.1l-5 .4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></a>
+              <form asp-action="Delete" asp-route-id="@p.Id" method="post" style="display:inline" onsubmit="return confirm('این مقاله حذف می‌شود. مطمئنید؟')">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn-admin-icon" title="حذف"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V7M6 7l1 13a2 2 0 0 0 2 1.8h6a2 2 0 0 0 2-1.8L18 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+              </form>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

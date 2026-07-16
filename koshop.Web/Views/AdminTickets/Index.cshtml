@@ -1,0 +1,39 @@
+@model AdminTicketsIndexViewModel
+@{
+    ViewData["Title"] = "تیکت‌های پشتیبانی";
+    Layout = "_AdminLayout";
+    var statusLabel = new Dictionary<string, string> { {"Open","باز"}, {"Answered","پاسخ داده شده"}, {"Closed","بسته شده"} };
+}
+
+<div class="admin-card">
+  <div class="admin-card-head"><h2>تیکت‌های پشتیبانی</h2></div>
+  <div class="admin-toolbar">
+    <a href="/AdminTickets" class="admin-filter-chip @(string.IsNullOrEmpty(Model.StatusFilter) ? "active" : "")">همه</a>
+    <a href="/AdminTickets?status=Open" class="admin-filter-chip @(Model.StatusFilter == "Open" ? "active" : "")">باز</a>
+    <a href="/AdminTickets?status=Answered" class="admin-filter-chip @(Model.StatusFilter == "Answered" ? "active" : "")">پاسخ داده شده</a>
+    <a href="/AdminTickets?status=Closed" class="admin-filter-chip @(Model.StatusFilter == "Closed" ? "active" : "")">بسته شده</a>
+  </div>
+
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead><tr><th>موضوع</th><th>مشتری</th><th>اولویت</th><th>تاریخ</th><th>وضعیت</th><th>عملیات</th></tr></thead>
+      <tbody>
+        @if (!Model.Tickets.Any())
+        {
+          <tr><td colspan="6"><div class="admin-empty"><strong>تیکتی یافت نشد</strong></div></td></tr>
+        }
+        @foreach (var t in Model.Tickets)
+        {
+          <tr>
+            <td class="cell-main">@t.Subject</td>
+            <td>@(t.User?.FullName ?? "—")</td>
+            <td>@t.Priority</td>
+            <td>@t.CreatedAt.ToString("yyyy/MM/dd")</td>
+            <td><span class="badge badge-@t.Status.ToLower()">@statusLabel.GetValueOrDefault(t.Status, t.Status)</span></td>
+            <td><a class="btn-admin-outline" href="/AdminTickets/Details/@t.Id">مشاهده و پاسخ</a></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

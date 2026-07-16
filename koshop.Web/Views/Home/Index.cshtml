@@ -1,33 +1,151 @@
+@model HomeIndexViewModel
 @{
-    ViewData["Title"] = "صفحه اصلی";
+    var home = Model.HomeContent;
+    ViewData["Title"] = !string.IsNullOrWhiteSpace(home?.SeoTitle) ? home!.SeoTitle : "صفحه اصلی";
     ViewData["ActiveNav"] = "home";
+    var heroImg = !string.IsNullOrWhiteSpace(home?.ImgSlide1) ? home!.ImgSlide1 : "/assets/cart-hero.png";
 }
 
-<!--
-  این یک صفحه اصلی موقتی است. نسخه کامل (هدر بزرگ، دسته‌بندی‌ها،
-  محصولات منتخب از دیتابیس) در قدم بعدی (ShopController) اضافه می‌شود.
-  فعلاً هدف این صفحه فقط تأیید این است که Layout، هدر، فوتر و
-  سیستم ورود/خروج به‌درستی کار می‌کنند.
--->
-<section class="hero-section">
+<!-- ===================== HERO ===================== -->
+<section class="hero">
   <div class="hero-inner">
     <div class="hero-text reveal-from-right">
-      <span class="hero-eyebrow">به زودی...</span>
-      <h1 class="hero-title">تجربه‌ای جدید<br><span style="color:var(--orange)">در راه است !</span></h1>
-      <p class="hero-desc">ما در حال آماده‌سازی بستری متفاوت و حرفه‌ای برای خرید و ثبت سفارش محصولات مورد نیاز شما هستیم.</p>
+      <p class="hero-eyebrow">@(home?.HeaderTitle ?? "به زودی...")</p>
+      <h1>@(home?.Titel_Body1 ?? "تجربه‌ای جدید")<br><span class="accent">@(home?.Titel_Body2 ?? "در راه است !")</span></h1>
+      <p class="hero-desc">@(home?.Text_Body ?? "ما در حال آماده‌سازی بستری متفاوت و حرفه‌ای برای خرید و ثبت سفارش محصولات مورد نیاز شما هستیم.")</p>
       <div class="hero-cta-row">
-        <a href="/Orders/Submit" class="btn-cta">ثبت سفارش کالا</a>
-        <a href="/Home/About" class="btn-cta-outline">درباره ما</a>
+        <a href="/Shop" class="btn-cta">
+          <span class="plus-icon">+</span>
+          @(home?.Btn1_Text ?? "مشاهده فروشگاه")
+        </a>
+        <a href="/Orders/Submit" class="btn-ghost">
+          @(home?.Btn2_Text ?? "ثبت سفارش کالا")
+          <span class="info-icon">i</span>
+        </a>
       </div>
     </div>
     <div class="hero-media reveal-from-left">
       <div class="hero-glow"></div>
       <div class="hero-platform"></div>
-      <img src="~/assets/cart-hero.png" alt="KO" class="hero-cart-img">
+      <img src="@heroImg" alt="KO" class="hero-cart-img" onerror="this.onerror=null;this.src='/assets/cart-hero.png'">
     </div>
   </div>
 </section>
 
-<div style="max-width:var(--maxw);margin:60px auto;padding:0 32px;text-align:center;color:var(--ink-soft)">
-  <p>@(User.Identity?.IsAuthenticated == true ? $"سلام {User.Identity!.Name}! ورود شما با موفقیت انجام شد." : "برای مشاهده محصولات، وارد حساب کاربری خود شوید یا در سایت ثبت‌نام کنید.")</p>
-</div>
+<!-- ===================== FEATURE STRIP ===================== -->
+<section class="feature-strip reveal-from-bottom">
+  <div class="feature-strip-inner" id="features-top"></div>
+</section>
+
+<!-- ===================== CATEGORIES ===================== -->
+@if (Model.Categories.Any())
+{
+  <section class="section categories-section reveal-from-bottom delay-1">
+    <div class="section-head">
+      <a class="see-all" href="/Shop">مشاهده همه</a>
+      <h2>@(home?.Box1_Title ?? "دسته‌بندی‌های محبوب")</h2>
+    </div>
+    <div class="categories-grid">
+      @foreach (var c in Model.Categories)
+      {
+        <a class="category-card" href="/Shop?categoryId=@c.Id">
+          <span class="category-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 4 7v10l8 4 8-4V7l-8-4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M4 7l8 4 8-4M12 11v10" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span>
+          <span class="category-label">@c.Name</span>
+          <span style="font-size:11.5px;color:var(--ink-soft)">@c.ProductCount محصول</span>
+        </a>
+      }
+    </div>
+  </section>
+}
+
+<!-- ===================== FEATURED PRODUCTS ===================== -->
+@if (Model.FeaturedProducts.Any())
+{
+  <section class="section products-section reveal-from-bottom delay-1">
+    <div class="section-head">
+      <a class="see-all" href="/Shop">مشاهده همه</a>
+      <h2>@(home?.Box2_Title ?? "محصولات منتخب")</h2>
+    </div>
+    <div class="shop-products-grid">
+      @foreach (var p in Model.FeaturedProducts)
+      {
+        var img = p.Images.OrderBy(i => i.SortOrder).FirstOrDefault()?.ImageUrl ?? "/assets/ko-logo.png";
+        <a href="/Shop/Details/@p.Id" class="sp-card" style="cursor:pointer;text-decoration:none;color:inherit">
+          <div class="sp-thumb" style="position:relative">
+            <img src="@img" alt="@p.Name" style="width:80%;padding:12px;object-fit:contain" loading="lazy" onerror="this.onerror=null;this.src='/assets/ko-logo.png';this.style.opacity='.2'">
+            @if (p.OldPrice.HasValue && p.OldPrice > p.Price)
+            {
+              var discount = (int)Math.Round((1 - (p.Price / p.OldPrice.Value)) * 100);
+              <span style="position:absolute;top:10px;left:10px;background:#e53935;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px">@(discount)٪</span>
+            }
+          </div>
+          <div class="sp-body">
+            <div class="sp-name">@p.Name</div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+              <div class="sp-price">@p.Price.ToString("N0") تومان</div>
+              @if (p.OldPrice.HasValue)
+              {
+                <div style="font-size:11px;color:#b3b4ba;text-decoration:line-through">@p.OldPrice.Value.ToString("N0")</div>
+              }
+            </div>
+            <div class="sp-rating">
+              <svg viewBox="0 0 24 24" fill="#f4b400" width="12" height="12"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              @p.Rating.ToString("0.0") <span style="color:#b3b4ba">(@p.ReviewCount)</span>
+            </div>
+            @if (p.Stock <= 0)
+            {
+              <div style="font-size:11.5px;color:#e1452f;font-weight:700;margin-top:4px">ناموجود</div>
+            }
+          </div>
+        </a>
+      }
+    </div>
+  </section>
+}
+
+<!-- ===================== BANNERS (پیشنهادهای ویژه) ===================== -->
+@if (Model.Banners.Any())
+{
+  <section class="section reveal-from-bottom delay-1">
+    <div class="section-head">
+      <h2>پیشنهادهای ویژه</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px">
+      @foreach (var b in Model.Banners)
+      {
+        <a href="@(string.IsNullOrWhiteSpace(b.LinkUrl) ? "/Shop" : b.LinkUrl)" title="@b.Title" style="display:block;border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--gray-line);background:#fff">
+          <img src="@b.ImageUrl" alt="@b.Title" style="width:100%;height:180px;object-fit:cover;display:block" loading="lazy" onerror="this.onerror=null;this.src='/assets/ko-logo.png';this.style.objectFit='contain';this.style.opacity='.25'">
+        </a>
+      }
+    </div>
+  </section>
+}
+
+<!-- ===================== TAOBAO STEPS ===================== -->
+<section class="taobao-section reveal-from-bottom delay-1">
+  <div class="taobao-inner">
+    @if (!string.IsNullOrWhiteSpace(home?.Box3_Title))
+    {
+      <h2>@home!.Box3_Title</h2>
+    }
+    else
+    {
+      <h2>به سادگی از <span class="accent">KO</span> سفارش کالا بده </h2>
+    }
+    <p class="taobao-sub">@(home?.Box3_Text ?? "در چند مرحله به سادگی از ما سفارش بگیر و لذت ببر !")</p>
+
+    <div class="steps-row" id="steps-row"></div>
+
+    <a href="/Orders/Submit" class="btn-cta taobao-btn">
+      @(home?.Box3_BtnText ?? "ثبت سفارش کالا")
+      <svg class="send-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M21 3 11 13M21 3l-6.5 18-3.5-8-8-3.5L21 3Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+  </div>
+</section>
+
+<!-- ===================== FEATURE STRIP 2 ===================== -->
+<section class="feature-strip reveal-from-bottom delay-2">
+  <div class="feature-strip-inner" id="features-bottom"></div>
+</section>
