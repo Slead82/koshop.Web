@@ -1,0 +1,48 @@
+@model MyOrdersIndexViewModel
+@{
+    ViewData["Title"] = "سفارشات من";
+    ViewData["ActiveNav"] = "";
+    var statusLabel = new Dictionary<string, string> {
+        {"Pending","در انتظار بررسی"}, {"Processing","در حال پردازش"}, {"Purchased","خریداری شده"},
+        {"Shipped","ارسال شده"}, {"Done","تحویل شده"}, {"Cancelled","لغو شده"}
+    };
+    string[] statuses = { "Pending", "Processing", "Purchased", "Shipped", "Done", "Cancelled" };
+}
+
+<div class="shop-page-header">
+  <div class="shop-page-header-inner">
+    <div class="breadcrumb"><a href="/">صفحه اصلی</a><span class="crumb-sep">›</span><span style="color:var(--orange)">سفارشات من</span></div>
+    <h1>سفارشات من</h1>
+  </div>
+</div>
+
+<div style="max-width:var(--maxw);margin:24px auto;padding:0 32px">
+  <div class="orders-filter-tabs" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px">
+    <a href="/Orders/MyOrders" class="admin-filter-chip @(string.IsNullOrEmpty(Model.StatusFilter) ? "active" : "")">همه</a>
+    @foreach (var s in statuses)
+    {
+      <a href="/Orders/MyOrders?status=@s" class="admin-filter-chip @(Model.StatusFilter == s ? "active" : "")">@statusLabel[s]</a>
+    }
+  </div>
+
+  @if (!Model.Orders.Any())
+  {
+    <div class="cart-items-card" style="text-align:center;padding:60px 20px">
+      <strong style="display:block;font-size:16px;margin-bottom:8px">هنوز سفارشی ثبت نکرده‌اید</strong>
+      <a href="/Shop" class="btn-cta">رفتن به فروشگاه</a>
+    </div>
+  }
+  else
+  {
+    <div class="order-list">
+      @foreach (var o in Model.Orders)
+      {
+        <a href="/Orders/Details/@o.Id" class="order-list-item" style="text-decoration:none;color:inherit;display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;background:#fff;border:1px solid var(--gray-line);border-radius:12px;padding:16px 20px;margin-bottom:12px">
+          <div style="font-weight:700">@o.OrderCode</div>
+          <div style="color:var(--ink-soft);font-size:13px">@o.CreatedAt.ToString("yyyy/MM/dd") — @o.TotalAmount.ToString("N0") تومان</div>
+          <span class="oli-status-badge badge badge-@o.Status.ToLower()">@statusLabel.GetValueOrDefault(o.Status, o.Status)</span>
+        </a>
+      }
+    </div>
+  }
+</div>

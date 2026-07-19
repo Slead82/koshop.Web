@@ -1,0 +1,52 @@
+@model SubmitOrderViewModel
+@{
+    ViewData["Title"] = "ثبت سفارش کالا";
+    ViewData["ActiveNav"] = "submit-order";
+}
+
+<div class="shop-page-header">
+  <div class="shop-page-header-inner">
+    <div class="breadcrumb"><a href="/">صفحه اصلی</a><span class="crumb-sep">›</span><span style="color:var(--orange)">ثبت سفارش KO</span></div>
+    <h1>سفارش کالا از فروشگاه‌های مرجع</h1>
+  </div>
+</div>
+
+<div style="max-width:640px;margin:32px auto;padding:0 20px">
+  <div class="admin-card">
+    <div class="admin-card-head">
+      <div><h2>مشخصات کالای موردنظر</h2><div class="admin-card-sub">لینک یا مشخصات کامل کالا از Taobao, 1688 یا Tmall رو برامون بفرست تا قیمت نهایی رو بررسی و اعلام کنیم.</div></div>
+    </div>
+
+    <form asp-action="Submit" method="post">
+      @Html.AntiForgeryToken()
+      <div asp-validation-summary="ModelOnly" style="color:#e1452f;font-size:13px;margin-bottom:12px"></div>
+
+      <div class="admin-form-group">
+        <label asp-for="SourceStore">فروشگاه مبدا</label>
+        <select asp-for="SourceStore" class="admin-select">
+          <option value="Taobao">Taobao</option>
+          <option value="1688">1688</option>
+          <option value="Tmall">Tmall</option>
+        </select>
+      </div>
+
+      <div class="admin-form-group">
+        <label asp-for="ProductDescription">لینک محصول یا توضیحات کامل کالا</label>
+        <textarea asp-for="ProductDescription" class="admin-textarea" style="min-height:110px" placeholder="مثلاً: https://item.taobao.com/... یا توضیح کامل کالا، رنگ، سایز و..."></textarea>
+        <span asp-validation-for="ProductDescription" style="color:#e1452f;font-size:12px"></span>
+      </div>
+
+      <div class="admin-form-group">
+        <label asp-for="Quantity">تعداد</label>
+        <input asp-for="Quantity" type="number" class="admin-input" style="max-width:120px">
+      </div>
+
+      <div class="admin-form-group">
+        <label asp-for="Notes">توضیحات تکمیلی (اختیاری)</label>
+        <textarea asp-for="Notes" class="admin-textarea" placeholder="هر توضیح اضافه‌ای که لازم می‌دونید..."></textarea>
+      </div>
+
+      <button type="submit" class="btn-cta" style="width:100%;justify-content:center">ثبت درخواست سفارش</button>
+    </form>
+  </div>
+</div>

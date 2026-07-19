@@ -49,10 +49,8 @@ public class Order
     // DB: ALTER TABLE Orders ADD ReceiverName nvarchar(150) NULL, ReceiverPhone nvarchar(20) NULL, ShippingAddress nvarchar(max) NULL;
     [StringLength(150)]
     public string? ReceiverName { get; set; }
-
     [StringLength(20)]
     public string? ReceiverPhone { get; set; }
-
     public string? ShippingAddress { get; set; }
 }
 
